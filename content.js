@@ -171,20 +171,20 @@ function loopLista2() {
 
 function gerarCSV() {
   // Cria o conteúdo do CSV com cabeçalhos
-  let csvContent = "\uFEFFTítulo da Vaga;Empresa;Palavras-Chave Encontradas;Salário;Candidatos;Anuncio da vaga;Candidatura Simplificada;Link\n";
+  let csvContent = "\uFEFFTítulo da Vaga\tEmpresa\tPalavras-Chave Encontradas\tSalário\tCandidatos\tAnuncio da vaga\tCandidatura Simplificada\tLink\n";
   
   // Preenche o conteúdo do CSV com os dados das vagas
   vagasStorage.forEach(vaga => {
-    csvContent += `${vaga.titulo};${vaga.empresa};${vaga.palavras};${vaga.salary};${vaga.candidatos};${vaga.anuncia};${vaga.candidatura};${vaga.link}\n`;
+    csvContent += `${vaga.titulo}\t${vaga.empresa}\t${vaga.palavras}\t${vaga.salary}\t${vaga.candidatos}\t${vaga.anuncia}\t${vaga.candidatura}\t${vaga.link}\n`;
   });
 
   // Cria um Blob com o conteúdo do CSV
-  let blob = new Blob([csvContent], { type: "text/csv" });
+  let blob = new Blob([csvContent], { type: "text/plan" });
   
   // Cria um link para fazer o download do CSV
   let link = document.createElement("a");
   link.href = window.URL.createObjectURL(blob);
-  link.download = "vagasStorage.csv";
+  link.download = "vagasStorage.txt";
   
   // Adiciona o link à página e clica automaticamente para iniciar o download
   document.body.appendChild(link);
