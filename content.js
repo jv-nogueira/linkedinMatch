@@ -29,10 +29,11 @@ document.addEventListener("keydown", function(event) {
 function loopLista1() {
   if (!running) return; // Interrompe o loop se running for false
   const span = Array.from(document.querySelectorAll('span')).find(el => el.textContent.trim() === 'Configurar alerta');
-
+console.log("O index agora é: "+index1)
   var listaElementos = span.parentNode.parentNode.parentNode.parentNode.parentNode.children[1].children[3].children;
   
   if (index1 < listaElementos.length) {
+    if(!listaElementos[index1].textContent.includes("Refinar")){
     var indexLista = listaElementos[index1];
     indexLista.children[0].children[0].click();
     indexLista.scrollIntoView();
@@ -136,9 +137,14 @@ function loopLista1() {
       index1++;
       loopLista1();
     }, question1 * 1000);
+  }else{
+    index1++;
+    loopLista1();
+  }
   } else {
     loopLista2();
   }
+
 }
 
 function loopLista2() {
