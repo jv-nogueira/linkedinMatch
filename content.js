@@ -125,7 +125,7 @@ console.log("O index agora é: "+index1)
         vagasStorage.push({
           titulo: tituloVaga,
           empresa: nomeEmpresa,
-          palavras: palavrasEncontradas.join(", "),
+          palavras: palavrasEncontradas.join("; "),
           salary: salary,
           candidatos: candidatos,
           anuncia: anuncia,
