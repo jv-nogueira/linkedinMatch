@@ -110,6 +110,8 @@ console.log("O index agora é: "+index1)
       try {
         if (document.getElementsByClassName("jobs-apply-button--top-card")[0]?.children[0]?.children[1]?.innerText === "Candidatura simplificada") {
           candidaturaSimplificada = "TRUE";
+        }else{
+          candidaturaSimplificada = "";
         }
       } catch (e) {
         console.log("Elemento de candidatura simplificada não encontrado.");
@@ -124,7 +126,7 @@ console.log("O index agora é: "+index1)
         // Armazena os dados no array, incluindo as palavras encontradas
         vagasStorage.push({
           titulo: tituloVaga,
-          empresa: nomeEmpresa,
+          empresa: "'"+nomeEmpresa,
           palavras: palavrasEncontradas.join("; "),
           salary: salary,
           candidatos: candidatos,
