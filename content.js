@@ -46,7 +46,7 @@ console.log("O index agora é: "+index1)
 
       try {
         // Extrair o título da vaga
-        var tituloVaga = listaElementos[index1].children[0].children[0].children[0].children[0].children[1].children[0].children[0].children[0].children[0].textContent.toLowerCase();
+        var tituloVaga = indexLista.children[0].children[0].children[0].children[0].children[1].children[0].children[0].children[0].children[0].textContent.toLowerCase();
       } catch (e) {
         palavrasEncontradas.push("Sem título 1");
       }
@@ -87,7 +87,7 @@ console.log("O index agora é: "+index1)
 
       let salary = "";
       try {
-        salary = document.querySelectorAll('.scaffold-layout__list-container')[0].children[index1].children[0]?.children[0]?.children[0]?.children[0]?.children[1]?.children[3].innerText
+        salary = indexLista.children[0].children[0].children[0].children[0].children[1].children[3].innerText
       } catch (e) {
         console.log("Elemento de salário não encontrado.");
       }
