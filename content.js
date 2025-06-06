@@ -84,7 +84,6 @@ console.log("O index agora é: "+index1)
       // Remove duplicatas das palavras encontradas
       palavrasEncontradas = [...new Set(palavrasEncontradas)];
 
-
       let salary = "";
       try {
         salary = indexLista.children[0].children[0].children[0].children[0].children[1].children[3].innerText
@@ -92,16 +91,18 @@ console.log("O index agora é: "+index1)
         console.log("Elemento de salário não encontrado.");
       }
 
+      // Undefined here last time
       let candidatos = "";
       try {
-        candidatos = document.getElementsByClassName("t-black--light mt2")[0].children[4]?.textContent;
+        candidatos = document.getElementsByClassName("t-black--light mt2")[0].children[0].children[2];
       } catch (e) {
         console.log("Elemento de candidatos não encontrado.");
       }
 
+      // Undefined here last time
       let anuncia = "";
       try {
-        anuncia = document.getElementsByClassName("t-black--light mt2")[0].children[2]?.textContent;
+        anuncia = document.getElementsByClassName("t-black--light mt2")[0].children[0]?.children[4]?.textContent;
       } catch (e) {
         console.log("Elemento de anuncia não encontrado.");
       }
