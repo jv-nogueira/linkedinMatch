@@ -6,22 +6,103 @@ let vagasStorage = []; // Armazena as vagas coletadas
 document.addEventListener("keydown", function(event) {
   if (event.keyCode === 113) { // F2 para iniciar/parar
     if (!running) {
-      // Inicia o script
-      question1 = prompt("Quantos segundos para percorrer cada vaga?");
-      question2 = prompt("Quais palavras procurar? (Separe por vírgula)").toLowerCase();
+      if (document.getElementById('ext-modal-overlay')) return; // já está aberta
+
+      const overlay = document.createElement('div');
+      overlay.id = 'ext-modal-overlay';
+      overlay.style = `
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(0, 0, 0, 0.4);
+        z-index: 99999;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-family: Arial, sans-serif;
+      `;
       
-      if (question1 > 0) {
-        // Converte a string de palavras separadas por vírgula em um array de palavras
-        question2 = question2.split(",");
-        running = true;
-        console.log("Script iniciado.");
-        loopLista1();
-      }
+      const box = document.createElement('div');
+      box.style = `
+        background: #fff;
+        color: black;
+        padding: 20px;
+        border-radius: 10px;
+        width: 350px;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+        position: relative;
+      `;
+      
+      box.innerHTML = `
+        <button id="ext-modal-close" style="
+          position: absolute; top: 10px; right: 10px;
+          background: none; border: none; font-size: 20px; cursor: pointer;
+          color: #666;
+        " title="Fechar">&times;</button>
+      
+        <div style="margin-bottom: 15px;">
+          <label for="ext-q1" style="display: block; margin-bottom: 5px; color: black;">Quantos segundos para percorrer cada vaga?</label>
+          <input id="ext-q1" type="number" min="1" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; color: black;" />
+        </div>
+      
+        <div style="margin-bottom: 20px;">
+          <label for="ext-q2" style="display: block; margin-bottom: 5px; color: black;">Quais palavras procurar? (Separe por vírgula)</label>
+          <input id="ext-q2" type="text" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; color: black;" />
+        </div>
+      
+        <div style="text-align: right;">
+          <button id="ext-modal-confirm" style="
+            background-color: #007bff;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+          ">Confirmar</button>
+        </div>
+      `;
+      
+      overlay.appendChild(box);
+      document.body.appendChild(overlay);
+      
+
+      overlay.appendChild(box);
+      document.body.appendChild(overlay);
+
+      const close = () => overlay.remove();
+
+      document.getElementById('ext-modal-close').onclick = close;
+
+      const confirm = () => {
+        const q1 = document.getElementById('ext-q1').value.trim();
+        const q2 = document.getElementById('ext-q2').value.trim().toLowerCase();
+
+        if (!q1 || !q2) {
+          alert("Preencha todos os campos.");
+          return;
+        }
+
+        question1 = Number(q1);
+        question2 = q2.split(',').map(p => p.trim()).filter(Boolean);
+
+        if (question1 > 0) {
+          running = true;
+          console.log("Script iniciado.");
+          close();
+          loopLista1();
+        }
+      };
+
+      document.getElementById('ext-modal-confirm').onclick = confirm;
+
+      overlay.querySelectorAll('input').forEach(input => {
+        input.addEventListener('keydown', function (e) {
+          if (e.key === 'Enter') confirm();
+        });
+      });
     } else {
-      // Para o script e gera o CSV
       running = false;
       console.log("Script interrompido.");
-      gerarCSV(); // Gera o arquivo CSV ao interromper o script
+      gerarCSV();
     }
   }
 });
@@ -94,7 +175,7 @@ console.log("O index agora é: "+index1)
       // Undefined here last time
       let candidatos = "";
       try {
-        candidatos = document.getElementsByClassName("t-black--light mt2")[0].children[0].children[2];
+        candidatos = document.getElementsByClassName("t-black--light mt2")[0].children[0]?.children[4]?.textContent;
       } catch (e) {
         console.log("Elemento de candidatos não encontrado.");
       }
@@ -102,7 +183,7 @@ console.log("O index agora é: "+index1)
       // Undefined here last time
       let anuncia = "";
       try {
-        anuncia = document.getElementsByClassName("t-black--light mt2")[0].children[0]?.children[4]?.textContent;
+        anuncia = document.getElementsByClassName("t-black--light mt2")[0].children[0].children[2].textContent;
       } catch (e) {
         console.log("Elemento de anuncia não encontrado.");
       }
