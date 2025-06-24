@@ -234,10 +234,10 @@ console.log("O index agora é: "+index1)
 function loopLista2() {
   if (!running) return; // Interrompe o loop se running for false
   
-  var listaHorizontal = document.querySelector(".artdeco-pagination__pages--number")?.children;
+  var listaHorizontal = document.querySelector("[aria-label='Ver página anterior']").parentNode.children[1].children;
   
   if (listaHorizontal && listaHorizontal.length > 0) {
-    var indexButton = Array.from(listaHorizontal).findIndex(button => button.children[0].getAttribute("aria-current") === "true");
+    var indexButton = Array.from(listaHorizontal).findIndex(button => button.children[0].getAttribute("aria-current") === "page")
     
     if (indexButton >= 0 && indexButton + 1 < listaHorizontal.length) {
       listaHorizontal[indexButton + 1].children[0].click();
