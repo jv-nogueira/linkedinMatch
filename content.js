@@ -109,12 +109,10 @@ document.addEventListener("keydown", function(event) {
 
 function loopLista1() {
   if (!running) return; // Interrompe o loop se running for false
-  const span = Array.from(document.querySelectorAll('span')).find(el => el.textContent.trim() === 'Configurar alerta');
 console.log("O index agora é: "+index1)
-  var listaElementos = span.parentNode.parentNode.parentNode.parentNode.parentNode.children[1].children[3].children;
+  var listaElementos = document.querySelectorAll("li[id^='ember']");
   
   if (index1 < listaElementos.length) {
-    if(!listaElementos[index1].textContent.includes("Refinar")){
     var indexLista = listaElementos[index1];
     indexLista.children[0].children[0].click();
     indexLista.scrollIntoView();
@@ -122,12 +120,11 @@ console.log("O index agora é: "+index1)
     setTimeout(() => {
       if (!running) return; // Interrompe o loop se running for false
       
-      let descriptionText1, descriptionText2;
       let palavrasEncontradas = [];
 
       try {
         // Extrair o título da vaga
-        var tituloVaga = indexLista.children[0].children[0].children[0].children[0].children[1].children[0].children[0].children[0].children[0].textContent.toLowerCase();
+        var tituloVaga = indexLista.querySelector("strong").textContent.toLowerCase();
       } catch (e) {
         palavrasEncontradas.push("Sem título 1");
       }
@@ -135,31 +132,22 @@ console.log("O index agora é: "+index1)
       // Verifica se alguma das palavras-chave está no título
       palavrasEncontradas = question2.filter(palavra => tituloVaga.includes(palavra));
 
+      let descriptionText;
       try {
-        // Primeira descrição
-        descriptionText1 = document.getElementsByClassName("text-heading-large")[1].parentNode.textContent.toLowerCase();
+        descriptionText = document.querySelector("[id='job-details']").innerText.toLowerCase();
       } catch (e) {
-        console.log("Sem descrição 1");
-      }
-
-      try {
-        // Segunda descrição
-        descriptionText2 = document.getElementsByClassName("text-heading-large")[0].parentNode.textContent.toLowerCase();
-      } catch (e) {
-        console.log("Sem descrição 2");
+        console.log("Sem descrição");
       }
 
       // Adiciona palavras encontradas nas descrições, se existirem
-      if (descriptionText1) {
-        if (descriptionText1.includes("sobre a vaga")) {
-          palavrasEncontradas.push(...question2.filter(palavra => descriptionText1.includes(palavra)));
-        }
-      } else if (descriptionText2) {
-        if (descriptionText2.includes("sobre a vaga")) {
-          palavrasEncontradas.push(...question2.filter(palavra => descriptionText2.includes(palavra)));
+      if (descriptionText) {
+        if (descriptionText.includes("sobre a vaga")) {
+          palavrasEncontradas.push(...question2.filter(palavra => descriptionText.includes(palavra)));
+        }else{
+          palavrasEncontradas.push("Não encontrado o sobre a vaga");
         }
       } else {
-        palavrasEncontradas.push("Sem descrição 3");
+        palavrasEncontradas.push("Não encontrado a descrição");
       }
 
       // Remove duplicatas das palavras encontradas
@@ -172,7 +160,6 @@ console.log("O index agora é: "+index1)
         console.log("Elemento de salário não encontrado.");
       }
 
-      // Undefined here last time
       let candidatos = "";
       try {
         candidatos = document.getElementsByClassName("t-black--light mt2")[0].children[0]?.children[4]?.textContent;
@@ -180,7 +167,6 @@ console.log("O index agora é: "+index1)
         console.log("Elemento de candidatos não encontrado.");
       }
 
-      // Undefined here last time
       let anuncia = "";
       try {
         anuncia = document.getElementsByClassName("t-black--light mt2")[0].children[0].children[2].textContent;
@@ -214,17 +200,13 @@ console.log("O index agora é: "+index1)
           candidatos: candidatos,
           anuncia: anuncia,
           candidatura: candidaturaSimplificada,
-          link: indexURL
+          link: indexURL,
+          descricao: '"'+descriptionText+'"'
         });
       }
-      
       index1++;
       loopLista1();
     }, question1 * 1000);
-  }else{
-    index1++;
-    loopLista1();
-  }
   } else {
     loopLista2();
   }
@@ -255,11 +237,11 @@ function loopLista2() {
 
 function gerarCSV() {
   // Cria o conteúdo do CSV com cabeçalhos
-  let csvContent = "\uFEFFTítulo da Vaga\tEmpresa\tPalavras-Chave Encontradas\tSalário\tCandidatos\tAnuncio da vaga\tCandidatura Simplificada\tLink\n";
+  let csvContent = "\uFEFFTítulo da Vaga\tEmpresa\tPalavras-Chave Encontradas\tSalário\tCandidatos\tAnuncio da vaga\tCandidatura Simplificada\tLink\tDescrição\n";
   
   // Preenche o conteúdo do CSV com os dados das vagas
   vagasStorage.forEach(vaga => {
-    csvContent += `${vaga.titulo}\t${vaga.empresa}\t${vaga.palavras}\t${vaga.salary}\t${vaga.candidatos}\t${vaga.anuncia}\t${vaga.candidatura}\t${vaga.link}\n`;
+    csvContent += `${vaga.titulo}\t${vaga.empresa}\t${vaga.palavras}\t${vaga.salary}\t${vaga.candidatos}\t${vaga.anuncia}\t${vaga.candidatura}\t${vaga.link}\t${vaga.descricao}\n`;
   });
 
   // Cria um Blob com o conteúdo do CSV
