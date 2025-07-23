@@ -114,7 +114,7 @@ console.log("O index agora é: "+index1)
   
   if (index1 < listaElementos.length) {
     var indexLista = listaElementos[index1];
-    indexLista.children[0].children[0].click();
+    indexLista.querySelector("ul").click();
     indexLista.scrollIntoView();
     
     setTimeout(() => {
