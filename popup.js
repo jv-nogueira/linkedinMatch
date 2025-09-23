@@ -1,5 +1,3 @@
-
-
 let running = false;
 let index1 = 0;
 let question2;
@@ -174,6 +172,7 @@ function processarVaga(indexLista, callback) {
 
     if (palavrasEncontradas.length > 0 && indexURL) {
       vagasStorage.push({
+        dataHora: new Date().toLocaleString(),
         titulo: tituloVaga,
         empresa: "'" + nomeEmpresa,
         palavras: palavrasEncontradas.join("; "),
@@ -182,7 +181,7 @@ function processarVaga(indexLista, callback) {
         anuncia: anuncia,
         candidatura: candidaturaSimplificada,
         link: indexURL,
-        descricao:  '"' + desc.innerText.replace(/\n+/g, '\n').trim() + '"'
+        descricao:  '"' + desc.innerText.replace(/\n+/g, '\n').replace(/"/g, '').trim() + '"'
       });
     }
 
@@ -212,9 +211,9 @@ function loopLista2() {
 }
 
 function gerarCSV() {
-  let csvContent = "\uFEFFTítulo da Vaga\tEmpresa\tPalavras-Chave Encontradas\tSalário\tCandidatos\tAnuncio da vaga\tCandidatura Simplificada\tLink\tDescrição\n";
+  let csvContent = "\uFEFFData e Hora\tTítulo da Vaga\tEmpresa\tPalavras-Chave Encontradas\tSalário\tCandidatos\tAnuncio da vaga\tCandidatura Simplificada\tLink\tDescrição\n";
   vagasStorage.forEach(vaga => {
-    csvContent += `${vaga.titulo}\t${vaga.empresa}\t${vaga.palavras}\t${vaga.salary}\t${vaga.candidatos}\t${vaga.anuncia}\t${vaga.candidatura}\t${vaga.link}\t${vaga.descricao}\n`;
+    csvContent += `${vaga.dataHora}\t${vaga.titulo}\t${vaga.empresa}\t${vaga.palavras}\t${vaga.salary}\t${vaga.candidatos}\t${vaga.anuncia}\t${vaga.candidatura}\t${vaga.link}\t${vaga.descricao}\n`;
   });
 
   let blob = new Blob([csvContent], { type: "text/plain" });
