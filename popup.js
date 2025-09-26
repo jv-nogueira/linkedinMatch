@@ -144,10 +144,14 @@ function processarVaga(indexLista, callback) {
 
     palavrasEncontradas = [...new Set(palavrasEncontradas)];
 
-    let salary = "", candidatos = "", anuncia = "", candidaturaSimplificada = "", nomeEmpresa = "", indexURL = "";
+    let salary = "", candidatos = "", anuncia = "", candidaturaSimplificada = "", nomeEmpresa = "", indexURL = "",modalidade = "";
 
     try {
       salary = indexLista.children[0].children[0].children[0].children[0].children[1].children[3].innerText;
+    } catch {}
+
+    try {
+      modalidade = indexLista.children[0].children[0].children[0].children[0].children[1].children[2].children[0].children[0].children[0].innerText;
     } catch {}
 
     try {
@@ -175,6 +179,7 @@ function processarVaga(indexLista, callback) {
         dataHora: new Date().toLocaleString(),
         titulo: tituloVaga,
         empresa: "'" + nomeEmpresa,
+        modalidade: modalidade,
         palavras: palavrasEncontradas.join("; "),
         salary: salary,
         candidatos: candidatos,
@@ -211,9 +216,9 @@ function loopLista2() {
 }
 
 function gerarCSV() {
-  let csvContent = "\uFEFFData e Hora\tTítulo da Vaga\tEmpresa\tPalavras-Chave Encontradas\tSalário\tCandidatos\tAnuncio da vaga\tCandidatura Simplificada\tLink\tDescrição\n";
+  let csvContent = "\uFEFFData e Hora\tTítulo da Vaga\tEmpresa\tModalidade\tPalavras-Chave Encontradas\tSalário\tCandidatos\tAnuncio da vaga\tCandidatura Simplificada\tLink\tDescrição\n";
   vagasStorage.forEach(vaga => {
-    csvContent += `${vaga.dataHora}\t${vaga.titulo}\t${vaga.empresa}\t${vaga.palavras}\t${vaga.salary}\t${vaga.candidatos}\t${vaga.anuncia}\t${vaga.candidatura}\t${vaga.link}\t${vaga.descricao}\n`;
+    csvContent += `${vaga.dataHora}\t${vaga.titulo}\t${vaga.empresa}\t${vaga.modalidade}\t${vaga.palavras}\t${vaga.salary}\t${vaga.candidatos}\t${vaga.anuncia}\t${vaga.candidatura}\t${vaga.link}\t${vaga.descricao}\n`;
   });
 
   let blob = new Blob([csvContent], { type: "text/plain" });
