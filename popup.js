@@ -16,9 +16,9 @@ function resetInterface() {
   running = false;
   startBtn.style.display = "block";
   stopBtn.style.display = "none";
-  keywordsInput.disabled = false; // desbloqueia input
-  saveAllCheckbox.disabled = false; // desbloqueia checkbox
-  document.getElementById("layoutExecucao")?.classList.add("hidden"); // Oculta layout, se existir
+  keywordsInput.disabled = false;
+  saveAllCheckbox.disabled = false;
+  document.getElementById("layoutExecucao")?.classList.add("hidden");
 }
 
 // Start
@@ -38,8 +38,8 @@ startBtn.addEventListener("click", async () => {
   running = true;
   startBtn.style.display = "none";
   stopBtn.style.display = "block";
-  keywordsInput.disabled = true; // bloqueia input
-  saveAllCheckbox.disabled = true; // bloqueia checkbox
+  keywordsInput.disabled = true;
+  saveAllCheckbox.disabled = true;
   document.getElementById("layoutExecucao")?.classList.remove("hidden");
 
   await chrome.scripting.executeScript({
@@ -63,7 +63,7 @@ stopBtn.addEventListener("click", async () => {
     }
   });
 
-  resetInterface(); // reseta botões e layout
+  resetInterface();
 });
 
 // Função principal executada na aba
@@ -74,7 +74,11 @@ function executarScript(words, saveAll) {
   console.log("Script iniciado com palavras:", words.join(", "), "| Salvar todas:", saveAll);
 
   window.gerarCSV = function () {
-    if (!window.vagasStorage || window.vagasStorage.length === 0) return;
+    if (!window.vagasStorage || window.vagasStorage.length === 0) {
+      finalizarExecucao();
+      return;
+    }
+
     let csvContent = "\uFEFFData e Hora\tTítulo da Vaga\tEmpresa\tModalidade\tPalavras-Chave Encontradas\tSalário\tCandidatos\tAnuncio da vaga\tCandidatura Simplificada\tLink\tDescrição\n";
     window.vagasStorage.forEach(vaga => {
       csvContent += `${vaga.dataHora}\t${vaga.titulo}\t${vaga.empresa}\t${vaga.modalidade}\t${vaga.palavras}\t${vaga.salary}\t${vaga.candidatos}\t${vaga.anuncia}\t${vaga.candidatura}\t${vaga.link}\t${vaga.descricao}\n`;
@@ -88,19 +92,19 @@ function executarScript(words, saveAll) {
     document.body.removeChild(link);
     console.log("CSV gerado com sucesso.");
 
-    // Reseta interface após gerar CSV
-    const startBtn = document.getElementById("startBtn");
-    const stopBtn = document.getElementById("stopBtn");
-    const keywordsInput = document.getElementById("keywords");
-    const saveAllCheckbox = document.getElementById("saveAll");
-
-    startBtn.style.display = "block";
-    stopBtn.style.display = "none";
-    keywordsInput.disabled = false;
-    saveAllCheckbox.disabled = false;
-    document.getElementById("layoutExecucao")?.classList.add("hidden");
-    window.running = false;
+    finalizarExecucao();
   };
+
+  // Finaliza execução e fecha a modal da extensão
+  function finalizarExecucao() {
+    window.running = false;
+    try {
+      chrome.runtime.sendMessage({ action: "fecharPopup" });
+    } catch (e) {
+      console.log("Encerrando popup localmente...");
+      window.close();
+    }
+  }
 
   loopLista1();
 
@@ -194,8 +198,9 @@ function executarScript(words, saveAll) {
   function loopLista2() {
     if (!window.running) return;
 
-    const lista = Array.from(document.querySelectorAll("[id='jobs-search-results-footer']")[0].querySelectorAll("li.jobs-search-pagination__indicator"));
+    const lista = Array.from(document.querySelectorAll("[id='jobs-search-results-footer']")[0]?.querySelectorAll("li.jobs-search-pagination__indicator") || []);
     if (!lista || lista.length === 0) {
+      console.log("Nenhuma paginação encontrada. Gerando CSV...");
       window.gerarCSV();
       return;
     }
@@ -211,4 +216,13 @@ function executarScript(words, saveAll) {
       window.gerarCSV();
     }
   }
+}
+
+// Listener no background para fechar popup da extensão
+if (chrome?.runtime?.onMessage) {
+  chrome.runtime.onMessage.addListener((msg) => {
+    if (msg.action === "fecharPopup") {
+      window.close();
+    }
+  });
 }
