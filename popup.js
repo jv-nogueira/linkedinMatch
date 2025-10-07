@@ -11,6 +11,16 @@ keywordsInput.addEventListener("input", () => {
   saveAllCheckbox.disabled = !hasKeywords;
 });
 
+// Função para resetar interface
+function resetInterface() {
+  running = false;
+  startBtn.style.display = "block";
+  stopBtn.style.display = "none";
+  keywordsInput.disabled = false; // desbloqueia input
+  saveAllCheckbox.disabled = false; // desbloqueia checkbox
+  document.getElementById("layoutExecucao")?.classList.add("hidden"); // Oculta layout, se existir
+}
+
 // Start
 startBtn.addEventListener("click", async () => {
   const keywords = keywordsInput.value.trim().toLowerCase();
@@ -20,7 +30,7 @@ startBtn.addEventListener("click", async () => {
   }
 
   const words = keywords.split(",").map(p => p.trim()).filter(Boolean);
-  const saveAll = saveAllCheckbox.checked; // Checa se deve salvar todas
+  const saveAll = saveAllCheckbox.checked;
 
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   if (!tab) return;
@@ -28,11 +38,14 @@ startBtn.addEventListener("click", async () => {
   running = true;
   startBtn.style.display = "none";
   stopBtn.style.display = "block";
+  keywordsInput.disabled = true; // bloqueia input
+  saveAllCheckbox.disabled = true; // bloqueia checkbox
+  document.getElementById("layoutExecucao")?.classList.remove("hidden");
 
   await chrome.scripting.executeScript({
     target: { tabId: tab.id },
     func: executarScript,
-    args: [words, saveAll] // Passa palavras-chave e flag saveAll
+    args: [words, saveAll]
   });
 });
 
@@ -40,10 +53,6 @@ startBtn.addEventListener("click", async () => {
 stopBtn.addEventListener("click", async () => {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   if (!tab) return;
-
-  running = false;
-  startBtn.style.display = "block";
-  stopBtn.style.display = "none";
 
   await chrome.scripting.executeScript({
     target: { tabId: tab.id },
@@ -53,6 +62,8 @@ stopBtn.addEventListener("click", async () => {
       if (typeof window.gerarCSV === "function") window.gerarCSV();
     }
   });
+
+  resetInterface(); // reseta botões e layout
 });
 
 // Função principal executada na aba
@@ -76,6 +87,19 @@ function executarScript(words, saveAll) {
     link.click();
     document.body.removeChild(link);
     console.log("CSV gerado com sucesso.");
+
+    // Reseta interface após gerar CSV
+    const startBtn = document.getElementById("startBtn");
+    const stopBtn = document.getElementById("stopBtn");
+    const keywordsInput = document.getElementById("keywords");
+    const saveAllCheckbox = document.getElementById("saveAll");
+
+    startBtn.style.display = "block";
+    stopBtn.style.display = "none";
+    keywordsInput.disabled = false;
+    saveAllCheckbox.disabled = false;
+    document.getElementById("layoutExecucao")?.classList.add("hidden");
+    window.running = false;
   };
 
   loopLista1();
@@ -119,8 +143,9 @@ function executarScript(words, saveAll) {
   function processarVaga(indexLista, callback) {
     if (!window.running) return;
     let palavrasEncontradas = [];
+    let tit = indexLista.querySelector("strong").textContent;
     let tituloVaga = "";
-    try { tituloVaga = indexLista.querySelector("strong").textContent.toLowerCase(); } catch { palavrasEncontradas.push("Sem título"); }
+    try { tituloVaga = tit.toLowerCase(); } catch { palavrasEncontradas.push("Sem título"); }
 
     palavrasEncontradas = words.filter(p => tituloVaga.includes(p));
 
@@ -144,11 +169,10 @@ function executarScript(words, saveAll) {
       try { nomeEmpresa = indexLista.children[0].children[0].children[0].children[0].children[1].children[1].children[0]?.innerText; } catch {}
       indexURL = indexLista.querySelector('a')?.href;
 
-      // Adiciona a vaga se houver palavras encontradas ou se saveAll estiver marcado
       if ((palavrasEncontradas.length > 0 || saveAll) && indexURL) {
         window.vagasStorage.push({
           dataHora: new Date().toLocaleString(),
-          titulo: tituloVaga,
+          titulo: '"' + tit.replace(/\n+/g, ' ') + '"',
           empresa: "'" + nomeEmpresa,
           modalidade: modalidade,
           palavras: palavrasEncontradas.join("; "),
@@ -171,7 +195,10 @@ function executarScript(words, saveAll) {
     if (!window.running) return;
 
     const lista = Array.from(document.querySelectorAll("[id='jobs-search-results-footer']")[0].querySelectorAll("li.jobs-search-pagination__indicator"));
-    if (!lista || lista.length === 0) return window.gerarCSV();
+    if (!lista || lista.length === 0) {
+      window.gerarCSV();
+      return;
+    }
 
     const indexAtual = Array.from(lista).findIndex(btn => btn.children[0].getAttribute("aria-current") === "page");
 
