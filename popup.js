@@ -40,7 +40,6 @@ startBtn.addEventListener("click", async () => {
   stopBtn.style.display = "block";
   keywordsInput.disabled = true;
   saveAllCheckbox.disabled = true;
-  document.getElementById("layoutExecucao")?.classList.remove("hidden");
 
   await chrome.scripting.executeScript({
     target: { tabId: tab.id },
@@ -95,7 +94,6 @@ function executarScript(words, saveAll) {
     finalizarExecucao();
   };
 
-  // Finaliza execução e fecha a modal da extensão
   function finalizarExecucao() {
     window.running = false;
     try {
@@ -165,12 +163,12 @@ function executarScript(words, saveAll) {
 
       let salary = "", candidatos = "", anuncia = "", candidaturaSimplificada = "", nomeEmpresa = "", indexURL = "", modalidade = "";
 
-      try { salary = indexLista.children[0].children[0].children[0].children[0].children[1].children[3].innerText; } catch {}
-      try { modalidade = indexLista.children[0].children[0].children[0].children[0].children[1].children[2].children[0].children[0].children[0].innerText; } catch {}
-      try { candidatos = document.getElementsByClassName("t-black--light mt2")[0].children[0]?.children[4]?.textContent; } catch {}
-      try { anuncia = document.getElementsByClassName("t-black--light mt2")[0].children[0].children[2].textContent; } catch {}
-      try { if (document.getElementsByClassName("jobs-apply-button--top-card")[0]?.children[0]?.children[1]?.innerText === "Candidatura simplificada") candidaturaSimplificada = "TRUE"; } catch {}
-      try { nomeEmpresa = indexLista.children[0].children[0].children[0].children[0].children[1].children[1].children[0]?.innerText; } catch {}
+      try { salary = indexLista.querySelector(".job-search-card__salary-info")?.innerText || ""; } catch {}
+      try { modalidade = indexLista.querySelector(".job-search-card__workplace-type")?.innerText || ""; } catch {}
+      try { candidatos = document.querySelector(".t-black--light.mt2")?.children[0]?.children[4]?.textContent || ""; } catch {}
+      try { anuncia = document.querySelector(".t-black--light.mt2")?.children[0]?.children[2]?.textContent || ""; } catch {}
+      try { if (document.querySelector(".jobs-apply-button--top-card")?.innerText.includes("Candidatura simplificada")) candidaturaSimplificada = "TRUE"; } catch {}
+      try { nomeEmpresa = indexLista.querySelector(".job-search-card__subtitle")?.innerText || ""; } catch {}
       indexURL = indexLista.querySelector('a')?.href;
 
       if ((palavrasEncontradas.length > 0 || saveAll) && indexURL) {
@@ -218,11 +216,9 @@ function executarScript(words, saveAll) {
   }
 }
 
-// Listener no background para fechar popup da extensão
+// Listener para fechar popup da extensão
 if (chrome?.runtime?.onMessage) {
   chrome.runtime.onMessage.addListener((msg) => {
-    if (msg.action === "fecharPopup") {
-      window.close();
-    }
+    if (msg.action === "fecharPopup") window.close();
   });
 }

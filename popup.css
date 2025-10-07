@@ -1,0 +1,133 @@
+:root {
+  color-scheme: light dark;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  margin: 12px;
+  padding: 0;
+  width: 260px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: background 0.3s, color 0.3s;
+}
+
+/* Tema escuro */
+@media (prefers-color-scheme: dark) {
+  body {
+    background-color: #121212;
+    color: #ffffff;
+  }
+
+  input {
+    background-color: #1e1e1e;
+    color: #ffffff;
+    border: 1px solid #555;
+  }
+
+  input::placeholder {
+    color: #aaaaaa;
+  }
+
+  button {
+    background-color: #333;
+    color: #fff;
+  }
+
+  button:hover {
+    background-color: #444;
+  }
+
+  #footer a {
+    color: #ccc; /* ícones visíveis no dark */
+  }
+  #footer a:hover {
+    color: #ffffff;
+  }
+}
+
+/* Tema claro */
+@media (prefers-color-scheme: light) {
+  body {
+    background-color: #ffffff;
+    color: #000000;
+  }
+
+  input {
+    background-color: #f8f8f8;
+    color: #000000;
+    border: 1px solid #ccc;
+  }
+
+  input::placeholder {
+    color: #555;
+  }
+
+  button {
+    background-color: #f0f0f0;
+    color: #000;
+  }
+
+  button:hover {
+    background-color: #e0e0e0;
+  }
+
+  #footer a {
+    color: #555; /* ícones visíveis no light */
+  }
+  #footer a:hover {
+    color: #1da1f2; /* destaque no hover */
+  }
+}
+
+/* Inputs */
+input {
+  width: 100%;
+  padding: 8px;
+  margin: 8px 0;
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+  transition: background 0.3s, color 0.3s, border 0.3s;
+}
+
+input:focus {
+  background-color: #fff;
+  border-color: #0078d7;
+  color: #000;
+}
+
+/* Botões */
+button {
+  width: 100%;
+  padding: 10px;
+  margin-top: 8px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.3s, color 0.3s;
+}
+
+#stopBtn {
+  display: none;
+}
+
+/* Rodapé com ícones */
+#footer {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 12px;
+}
+
+#footer a {
+  display: inline-block;
+  transition: transform 0.3s ease, color 0.3s ease;
+  font-size: 24px; /* tamanho dos ícones */
+}
+
+#footer a:hover {
+  transform: scale(1.3);
+}
