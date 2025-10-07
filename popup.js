@@ -1,9 +1,17 @@
 const startBtn = document.getElementById("startBtn");
 const stopBtn = document.getElementById("stopBtn");
 const keywordsInput = document.getElementById("keywords");
+const saveAllCheckbox = document.getElementById("saveAll");
 
 let running = false;
 
+// Habilita/desabilita a checkbox dependendo do input de palavras-chave
+keywordsInput.addEventListener("input", () => {
+  const hasKeywords = keywordsInput.value.trim().length > 0;
+  saveAllCheckbox.disabled = !hasKeywords;
+});
+
+// Start
 startBtn.addEventListener("click", async () => {
   const keywords = keywordsInput.value.trim().toLowerCase();
   if (!keywords) {
@@ -12,6 +20,7 @@ startBtn.addEventListener("click", async () => {
   }
 
   const words = keywords.split(",").map(p => p.trim()).filter(Boolean);
+  const saveAll = saveAllCheckbox.checked; // Checa se deve salvar todas
 
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   if (!tab) return;
@@ -23,10 +32,11 @@ startBtn.addEventListener("click", async () => {
   await chrome.scripting.executeScript({
     target: { tabId: tab.id },
     func: executarScript,
-    args: [words]
+    args: [words, saveAll] // Passa palavras-chave e flag saveAll
   });
 });
 
+// Stop
 stopBtn.addEventListener("click", async () => {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   if (!tab) return;
@@ -35,36 +45,29 @@ stopBtn.addEventListener("click", async () => {
   startBtn.style.display = "block";
   stopBtn.style.display = "none";
 
-  // Para execução e chama a mesma função gerarCSV
   await chrome.scripting.executeScript({
     target: { tabId: tab.id },
     func: () => {
       window.running = false;
       console.log("Execução interrompida manualmente.");
-
-      if (typeof window.gerarCSV === "function") {
-        window.gerarCSV();
-      }
+      if (typeof window.gerarCSV === "function") window.gerarCSV();
     }
   });
 });
 
-function executarScript(words) {
+// Função principal executada na aba
+function executarScript(words, saveAll) {
   window.running = true;
   window.vagasStorage = window.vagasStorage || [];
-
   let index1 = 0;
-  console.log("Script iniciado com palavras:", words.join(", "));
+  console.log("Script iniciado com palavras:", words.join(", "), "| Salvar todas:", saveAll);
 
-  // Expondo gerarCSV globalmente para poder reutilizar
   window.gerarCSV = function () {
     if (!window.vagasStorage || window.vagasStorage.length === 0) return;
-
     let csvContent = "\uFEFFData e Hora\tTítulo da Vaga\tEmpresa\tModalidade\tPalavras-Chave Encontradas\tSalário\tCandidatos\tAnuncio da vaga\tCandidatura Simplificada\tLink\tDescrição\n";
     window.vagasStorage.forEach(vaga => {
       csvContent += `${vaga.dataHora}\t${vaga.titulo}\t${vaga.empresa}\t${vaga.modalidade}\t${vaga.palavras}\t${vaga.salary}\t${vaga.candidatos}\t${vaga.anuncia}\t${vaga.candidatura}\t${vaga.link}\t${vaga.descricao}\n`;
     });
-
     const blob = new Blob([csvContent], { type: "text/plain" });
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
@@ -72,7 +75,6 @@ function executarScript(words) {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-
     console.log("CSV gerado com sucesso.");
   };
 
@@ -97,7 +99,6 @@ function executarScript(words) {
           loopLista1();
         });
       });
-
     } else {
       setTimeout(() => {
         console.log("Item não renderizado.");
@@ -118,7 +119,6 @@ function executarScript(words) {
   function processarVaga(indexLista, callback) {
     if (!window.running) return;
     let palavrasEncontradas = [];
-
     let tituloVaga = "";
     try { tituloVaga = indexLista.querySelector("strong").textContent.toLowerCase(); } catch { palavrasEncontradas.push("Sem título"); }
 
@@ -144,7 +144,8 @@ function executarScript(words) {
       try { nomeEmpresa = indexLista.children[0].children[0].children[0].children[0].children[1].children[1].children[0]?.innerText; } catch {}
       indexURL = indexLista.querySelector('a')?.href;
 
-      if (palavrasEncontradas.length > 0 && indexURL) {
+      // Adiciona a vaga se houver palavras encontradas ou se saveAll estiver marcado
+      if ((palavrasEncontradas.length > 0 || saveAll) && indexURL) {
         window.vagasStorage.push({
           dataHora: new Date().toLocaleString(),
           titulo: tituloVaga,

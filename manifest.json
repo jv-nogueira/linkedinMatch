@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
-  "name": "Coincide a descrição LinkedIn",
-  "description": "Abre vagas com palavras-chave na descrição e gera arquivo TXT.",
+  "name": "Match no LinkedIn",
+  "description": "Filtra vagas pelas palavras-chave e gera um arquivo em TXT.",
   "version": "1.0",
   "permissions": ["activeTab", "scripting"],
   "host_permissions": ["https://www.linkedin.com/*"],
