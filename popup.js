@@ -260,7 +260,11 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       window.__EXT_JOB_RUNNER_ACTIVE = true;
       window.running = true;
-      window.vagasStorage = window.vagasStorage || [];
+
+      // Limpa dados antigos para reinício limpo
+      window.vagasStorage = [];
+      try { chrome.storage.local.remove(['vagasStorage']); } catch(e){ console.error(e); }
+
       let index1 = 0;
 
       // salva status no chrome.storage.local
@@ -295,6 +299,11 @@ document.addEventListener('DOMContentLoaded', () => {
           if (msg.action === 'stop') {
             window.running = false;
             window.__EXT_JOB_RUNNER_ACTIVE = false; // garante que o start funcione de novo
+
+            // limpa dados antigos
+            window.vagasStorage = [];
+            try { chrome.storage.local.remove(['vagasStorage']); } catch(e){ console.error(e); }
+            
             try {
               if (typeof window.gerarCSV === 'function') window.gerarCSV();
             } catch (e) { console.error('Erro ao gerar CSV no stop:', e); }
@@ -432,8 +441,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
             let salary = '', candidatos = '', anuncia = '', candidaturaSimplificada = '', nomeEmpresa = '', indexURL = '', modalidade = '';
 
-            try { salary = itemElemento.querySelector('.job-search-card__salary-info')?.innerText || ''; } catch {}
-            try { modalidade = itemElemento.querySelector('.job-search-card__workplace-type')?.innerText || ''; } catch {}
+            try { salary = itemElemento.children[0].children[0].children[0].children[0].children[1].children[3]?.innerText || ''; } catch {}
+            try { modalidade = itemElemento.querySelectorAll("ul")[0]?.innerText || ''; } catch {}
             try { candidatos = document.querySelector('.t-black--light.mt2')?.children[0]?.children[4]?.textContent || ''; } catch {}
             try { anuncia = document.querySelector('.t-black--light.mt2')?.children[0]?.children[2]?.textContent || ''; } catch {}
             try { if (document.querySelector('.jobs-apply-button--top-card')?.innerText.includes('Candidatura simplificada')) candidaturaSimplificada = 'TRUE'; } catch {}
