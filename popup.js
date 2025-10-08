@@ -298,15 +298,22 @@ document.addEventListener('DOMContentLoaded', () => {
           }
           if (msg.action === 'stop') {
             window.running = false;
-            window.__EXT_JOB_RUNNER_ACTIVE = false; // garante que o start funcione de novo
+            window.__EXT_JOB_RUNNER_ACTIVE = false;
 
-            // limpa dados antigos
-            window.vagasStorage = [];
-            try { chrome.storage.local.remove(['vagasStorage']); } catch(e){ console.error(e); }
-            
             try {
               if (typeof window.gerarCSV === 'function') window.gerarCSV();
-            } catch (e) { console.error('Erro ao gerar CSV no stop:', e); }
+            } catch (e) {
+              console.error('Erro ao gerar CSV no stop:', e);
+            }
+
+            // limpa dados antigos após gerar o arquivo
+            try {
+              window.vagasStorage = [];
+              chrome.storage.local.remove(['vagasStorage']);
+            } catch (e) {
+              console.error(e);
+            }
+
             sendResponse({ stopped: true });
             return;
           }
@@ -446,14 +453,14 @@ document.addEventListener('DOMContentLoaded', () => {
             try { candidatos = document.querySelector('.t-black--light.mt2')?.children[0]?.children[4]?.textContent || ''; } catch {}
             try { anuncia = document.querySelector('.t-black--light.mt2')?.children[0]?.children[2]?.textContent || ''; } catch {}
             try { if (document.querySelector('.jobs-apply-button--top-card')?.innerText.includes('Candidatura simplificada')) candidaturaSimplificada = 'TRUE'; } catch {}
-            try { nomeEmpresa = itemElemento.querySelector('strong')?.innerText || ''; } catch {}
+            try { nomeEmpresa = itemElemento.children[0].children[0].children[0].children[0].children[1].children[1].children[0]?.innerText || ''; } catch {}
             indexURL = itemElemento.querySelector('a')?.href || '';
 
             if ((palavrasEncontradas.length > 0 || saveAll) && indexURL) {
               window.vagasStorage.push({
                 dataHora: new Date().toLocaleString(),
                 titulo: '"' + (tit || '').replace(/\n+/g, ' ') + '"',
-                empresa: "'" + (nomeEmpresa || ''),
+                empresa: "'" + nomeEmpresa,
                 modalidade: modalidade,
                 palavras: palavrasEncontradas.join('; '),
                 salary: salary,
