@@ -3,13 +3,13 @@
   "name": "Match no LinkedIn",
   "description": "Filtra vagas pelas palavras-chave e gera um arquivo em TXT.",
   "version": "1.0",
-  "permissions": ["activeTab", "scripting"],
+  "permissions": ["activeTab", "scripting", "storage"],
   "host_permissions": ["https://www.linkedin.com/*"],
   "action": {
     "default_popup": "popup.html",
     "default_title": "Coincide a descrição"
   },
-  "icons": { 
+  "icons": {
     "48": "icons/automacao.png"
   }
 }
