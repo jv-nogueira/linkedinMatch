@@ -6,6 +6,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const keywordsInput = document.getElementById('keywords');
   const saveAllCheckbox = document.getElementById('saveAll');
   const statusInfoEl = document.getElementById('statusInfo');
+  const keywordsTitleInput = document.getElementById('keywordsTitle');
+  const sheetLinkInput = document.getElementById('sheetLink');
+const useSheetCheckbox = document.getElementById('useSheet');
 
   chrome.runtime.onMessage.addListener((msg) => {
     if (msg && msg.action === 'fecharPopup') {
@@ -37,7 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function updateSaveAllDisabled() {
-    saveAllCheckbox.disabled = !keywordsInput.value.trim();
+    saveAllCheckbox.disabled = false;
   }
 
   function updateStatusInfo(text) {
@@ -71,12 +74,14 @@ document.addEventListener('DOMContentLoaded', () => {
       startBtn.style.display = 'none';
       stopBtn.style.display = 'block';
       keywordsInput.disabled = true;
+      keywordsTitleInput.disabled = true;
       saveAllCheckbox.disabled = true;
       updateStatusInfo('Em execução...');
     } else {
       startBtn.style.display = 'block';
       stopBtn.style.display = 'none';
       keywordsInput.disabled = false;
+      keywordsTitleInput.disabled = false;
       updateSaveAllDisabled();
       updateStatusInfo('');
     }
@@ -121,9 +126,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
   startBtn.addEventListener('click', async () => {
     const keywords = keywordsInput.value.trim();
-    if (!keywords) return alert('Preencha as palavras-chave.');
 
-    const words = keywords.toLowerCase().split(',').map(p => p.trim()).filter(Boolean);
+const wordsDesc = (keywords || '')
+  .toLowerCase()
+  .split(',')
+  .map(p => p.trim())
+  .filter(Boolean);
+
+const wordsTitle = (keywordsTitleInput.value || '')
+  .toLowerCase()
+  .split(',')
+  .map(p => p.trim())
+  .filter(Boolean);
     const saveAll = saveAllCheckbox.checked;
 
     const tabs = await tabsQuery({ active: true, currentWindow: true });
@@ -132,11 +146,14 @@ document.addEventListener('DOMContentLoaded', () => {
     await storageSet({ keywords, saveAll, running: true });
     await setRunningState(true);
 
-    await sendMessageToTab(tab.id, {
-      action: 'start',
-      words,
-      saveAll
-    });
+await sendMessageToTab(tab.id, {
+  action: 'start',
+  words: wordsDesc,
+  wordsTitle,
+  saveAll,
+  sheetLink: sheetLinkInput.value,
+  useSheet: useSheetCheckbox.checked
+});
 
     startPollingTabStatus(tab.id);
   });
