@@ -11,5 +11,11 @@
   },
   "icons": {
     "48": "icons/automacao.png"
-  }
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://www.linkedin.com/*"],
+      "js": ["content.js"]
+    }
+  ]
 }
