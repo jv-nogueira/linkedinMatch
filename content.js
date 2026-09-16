@@ -1,5 +1,7 @@
 'use strict';
 
+const GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzgYl20qiSaDxibUdR0fCA0BDZzlploNnn2LHsUyAGXq2v7t2Yd-zO7Zm0KyE73yUYC/exec';
+
 if (!window.__EXT_JOB_RUNNER_INITIALIZED) {
   window.__EXT_JOB_RUNNER_INITIALIZED = true;
 
@@ -85,8 +87,16 @@ function executarScript(words = [], wordsTitle = [], saveAll = false, sheetLink 
 
     let sheetLinksSet = new Set();
 
+    function isScriptUrl(url = '') {
+      const value = (url || '').trim();
+      return !!value && (value.includes('script.google.com') || value.includes('/exec'));
+    }
+
+    const scriptUrl = (sheetLink || '').trim() || GOOGLE_APPS_SCRIPT_URL;
+
     async function carregarPlanilha() {
       if (!useSheet || !sheetLink) return;
+      if (isScriptUrl(sheetLink)) return;
 
       try {
         const resp = await fetch(sheetLink);
@@ -131,38 +141,6 @@ function executarScript(words = [], wordsTitle = [], saveAll = false, sheetLink 
       } catch {}
     }
 
-    chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
-      try {
-        if (!msg || !msg.action) return;
-
-        if (msg.action === 'getStatus') {
-          sendResponse({
-            running: !!window.running,
-            currentIndex: index1,
-            vagasCount: (window.vagasStorage || []).length
-          });
-          return;
-        }
-
-        if (msg.action === 'stop') {
-          window.running = false;
-          window.__EXT_JOB_RUNNER_ACTIVE = false;
-
-          if (typeof window.gerarCSV === 'function') {
-            window.gerarCSV();
-          }
-
-          window.vagasStorage = [];
-          chrome.storage.local.remove(['vagasStorage']);
-
-          sendResponse({ stopped: true });
-          return;
-        }
-      } catch (e) {
-        sendResponse({ error: e.message });
-      }
-    });
-
     window.addEventListener('beforeunload', () => {
       try { chrome.storage.local.set({ running: false }); } catch {}
     });
@@ -176,33 +154,10 @@ function executarScript(words = [], wordsTitle = [], saveAll = false, sheetLink 
       try { chrome.runtime.sendMessage({ action: 'fecharPopup' }); } catch {}
     }
 
-    window.gerarCSV = function () {
-      try {
-        if (!window.vagasStorage || window.vagasStorage.length === 0) {
-          finalizarExecucao();
-          return;
-        }
-
-        let csvContent =
-          "\uFEFFData e Hora\tTítulo da Vaga\tEmpresa\tModalidade\tPalavras Título\tPalavras Descrição\tSalário\tCandidatos\tAnuncio da vaga\tCandidatura Simplificada\tLink\tDescrição\n";
-
-        window.vagasStorage.forEach(vaga => {
-          csvContent += `${vaga.dataHora}\t${vaga.titulo}\t${vaga.empresa}\t${vaga.modalidade}\t${vaga.palavrasTitulo}\t${vaga.palavrasDescricao}\t${vaga.salary}\t${vaga.candidatos}\t${vaga.anuncia}\t${vaga.candidatura}\t${vaga.link}\t${vaga.descricao}\n`;
-        });
-
-        const blob = new Blob([csvContent], { type: 'text/plain' });
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.download = 'vagasStorage.txt';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-
-      } catch (e) {
-        console.error('Erro gerarCSV:', e);
-      } finally {
-        finalizarExecucao();
-      }
+    window.gerarCSV = async function () {
+      // Envio em tempo real já foi feito durante o processamento
+      // Apenas finaliza a execução
+      finalizarExecucao();
     };
 
     (async () => {
@@ -308,7 +263,7 @@ function executarScript(words = [], wordsTitle = [], saveAll = false, sheetLink 
           }
 
           if ((palavrasTitulo.length > 0 || palavrasDescricao.length > 0 || saveAll) && indexURL) {
-            window.vagasStorage.push({
+            const vagaObj = {
               dataHora: new Date().toLocaleString(),
               titulo: '"' + tit.replace(/\n+/g, ' ') + '"',
               empresa: "'" + nomeEmpresa,
@@ -321,7 +276,23 @@ function executarScript(words = [], wordsTitle = [], saveAll = false, sheetLink 
               candidatura: candidaturaSimplificada,
               link: indexURL,
               descricao: '"' + desc.innerText.replace(/\n+/g, '\n').replace(/"/g, '').trim() + '"'
-            });
+            };
+            window.vagasStorage.push(vagaObj);
+
+            // Envio em tempo real
+            if (isScriptUrl(scriptUrl)) {
+              chrome.runtime.sendMessage({
+                action: 'sendRowsToSheet',
+                url: scriptUrl,
+                rows: [vagaObj]
+              }, (resp) => {
+                if (resp && resp.ok) {
+                  console.log('Vaga enviada:', vagaObj.titulo);
+                } else {
+                  console.warn('Falha ao enviar vaga:', resp?.error);
+                }
+              });
+            }
           }
 
         } catch (e) {

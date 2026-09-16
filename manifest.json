@@ -4,7 +4,13 @@
   "description": "Filtra vagas pelas palavras-chave e gera um arquivo em TXT.",
   "version": "1.0",
   "permissions": ["activeTab", "scripting", "storage"],
-  "host_permissions": ["https://www.linkedin.com/*"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "host_permissions": [
+    "https://www.linkedin.com/*",
+    "https://script.google.com/*"
+  ],
   "action": {
     "default_popup": "popup.html",
     "default_title": "Coincide a descrição"

@@ -1,5 +1,7 @@
 'use strict';
 
+const GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxpNzRg5SDSKgSrvhnB3C-070vSJhp3bZ1QvVg_OmFoi13Wq-seSbPzBSBBHXt0d807/exec';
+
 document.addEventListener('DOMContentLoaded', () => {
   const startBtn = document.getElementById('startBtn');
   const stopBtn = document.getElementById('stopBtn');
@@ -8,7 +10,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const statusInfoEl = document.getElementById('statusInfo');
   const keywordsTitleInput = document.getElementById('keywordsTitle');
   const sheetLinkInput = document.getElementById('sheetLink');
-const useSheetCheckbox = document.getElementById('useSheet');
+  const useSheetCheckbox = document.getElementById('useSheet');
+
+  sheetLinkInput.value = GOOGLE_APPS_SCRIPT_URL;
 
   chrome.runtime.onMessage.addListener((msg) => {
     if (msg && msg.action === 'fecharPopup') {
